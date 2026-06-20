@@ -11,6 +11,7 @@ import sys
 import time
 import threading
 import atexit
+from i18n import STRINGS, t as i18n_t
 
 if os.name == 'nt':
     import msvcrt  # Windows keyboard input
@@ -31,124 +32,7 @@ STONE_NAMES_EN = {BLACK: 'Black', WHITE: 'White'}
 DIRECTIONS = [(0, 1), (1, 0), (1, 1), (1, -1)]  # H, V, D1, D2
 
 # ── Language support ───────────────────────────────────────────────────────
-LANG = {
-    'zh': {
-        'title': '=== 五子棋 (Gomoku) ===',
-        'menu_title': '=== 五子棋 主菜单 ===',
-        'pvp': '1. 玩家对战 (PvP)',
-        'pve': '2. 人机对战 (PvE)',
-        'scoreboard': '3. 排行榜',
-        'quit': '4. 退出',
-        'choose_mode': '请选择模式 (1-4): ',
-        'invalid_choice': '无效选择，请输入 1-4',
-        'black_turn': '黑棋 (●) 的回合',
-        'white_turn': '白棋 (○) 的回合',
-        'ai_thinking': 'AI 思考中...',
-        'enter_move': '请输入落子坐标 (如 H8)，或按 U 撤销，P 暂停，Q 退出，R 重开，S 声音，L 语言，+/- 调整时间: ',
-        'invalid_coord': '无效坐标，请输入 A-O 和 1-15 的组合 (如 H8)',
-        'cell_occupied': '该位置已有棋子，请重新选择',
-        'win_msg': '🎉 {winner} 获胜！🎉',
-        'draw_msg': '🤝 平局！棋盘已满',
-        'timeout_msg': '⏰ {player} 超时！{winner} 获胜！',
-        'paused': '⏸️  游戏已暂停。按 P 继续，Q 退出到主菜单',
-        'game_over': '游戏结束！按 R 重新开始，Q 返回主菜单',
-        'undo_ok': '已撤销上一步',
-        'undo_pve': '已撤销 AI 和你的上一步',
-        'no_undo': '没有可撤销的步骤',
-        'sound_on': '🔊 声音已开启',
-        'sound_off': '🔇 声音已关闭',
-        'lang_zh': '🌐 语言已切换为中文',
-        'lang_en': '🌐 Language switched to English',
-        'time_set': '⏱️  时间限制已设为 {t} 秒',
-        'time_range': '时间限制范围: 10-300 秒',
-        'restart_confirm': '确定重新开始？(y/n): ',
-        'quit_confirm': '确定退出到主菜单？(y/n): ',
-        'score_title': '=== 🏆 排行榜 (Top 10) ===',
-        'score_header': '{:<4} {:<12} {:>5} {:>5} {:>5} {:>8} {:>10}'.format('排名', '玩家', '胜', '负', '平', '胜率', '最近游戏'),
-        'score_row': '{:<4} {:<12} {:>5} {:>5} {:>5} {:>7.1%} {:>10}',
-        'no_scores': '暂无游戏记录',
-        'press_enter': '按 Enter 返回主菜单',
-        'enter_name_black': '请输入黑棋玩家名称: ',
-        'enter_name_white': '请输入白棋玩家名称: ',
-        'enter_name_player': '请输入你的名称: ',
-        'default_name': '玩家',
-        'ai_name': 'AI',
-        'save_score_ask': '是否保存游戏记录？(y/n): ',
-        'score_saved': '游戏记录已保存！',
-        'welcome': '欢迎来到五子棋！',
-        'controls_title': '=== 操作说明 ===',
-        'controls': [
-            '坐标输入: A-O + 1-15 (如 H8)',
-            'U - 撤销上一步',
-            'P - 暂停/继续',
-            'Q - 退出到主菜单',
-            'R - 重新开始',
-            'S - 开关声音',
-            'L - 切换语言',
-            '+/- - 调整时间限制 (10-300秒)',
-        ],
-        'black_stone': '●',
-        'white_stone': '○',
-    },
-    'en': {
-        'title': '=== Gomoku ===',
-        'menu_title': '=== Gomoku Main Menu ===',
-        'pvp': '1. Player vs Player (PvP)',
-        'pve': '2. Player vs AI (PvE)',
-        'scoreboard': '3. Scoreboard',
-        'quit': '4. Quit',
-        'choose_mode': 'Choose mode (1-4): ',
-        'invalid_choice': 'Invalid choice, enter 1-4',
-        'black_turn': "Black's turn (●)",
-        'white_turn': "White's turn (○)",
-        'ai_thinking': 'AI thinking...',
-        'enter_move': 'Enter coordinate (e.g. H8), or U=undo, P=pause, Q=quit, R=restart, S=sound, L=language, +/-=time: ',
-        'invalid_coord': 'Invalid coordinate. Use A-O and 1-15 (e.g. H8)',
-        'cell_occupied': 'Cell occupied, choose another',
-        'win_msg': '🎉 {winner} wins! 🎉',
-        'draw_msg': '🤝 Draw! Board is full',
-        'timeout_msg': '⏰ {player} timed out! {winner} wins!',
-        'paused': '⏸️  Game paused. Press P to resume, Q to quit to menu',
-        'game_over': 'Game over! Press R to restart, Q to return to menu',
-        'undo_ok': 'Undo successful',
-        'undo_pve': 'Undo AI and your last move',
-        'no_undo': 'No moves to undo',
-        'sound_on': '🔊 Sound on',
-        'sound_off': '🔇 Sound off',
-        'lang_zh': '🌐 Language switched to Chinese',
-        'lang_en': '🌐 语言已切换为英文',
-        'time_set': '⏱️  Time limit set to {t} seconds',
-        'time_range': 'Time limit range: 10-300 seconds',
-        'restart_confirm': 'Restart? (y/n): ',
-        'quit_confirm': 'Quit to menu? (y/n): ',
-        'score_title': '=== 🏆 Scoreboard (Top 10) ===',
-        'score_header': '{:<4} {:<12} {:>5} {:>5} {:>5} {:>8} {:>10}'.format('Rank', 'Player', 'W', 'L', 'D', 'Win%', 'Last Game'),
-        'score_row': '{:<4} {:<12} {:>5} {:>5} {:>5} {:>7.1%} {:>10}',
-        'no_scores': 'No game records yet',
-        'press_enter': 'Press Enter to return to menu',
-        'enter_name_black': 'Enter Black player name: ',
-        'enter_name_white': 'Enter White player name: ',
-        'enter_name_player': 'Enter your name: ',
-        'default_name': 'Player',
-        'ai_name': 'AI',
-        'save_score_ask': 'Save game record? (y/n): ',
-        'score_saved': 'Game record saved!',
-        'welcome': 'Welcome to Gomoku!',
-        'controls_title': '=== Controls ===',
-        'controls': [
-            'Coordinate: A-O + 1-15 (e.g. H8)',
-            'U - Undo last move',
-            'P - Pause/Resume',
-            'Q - Quit to menu',
-            'R - Restart game',
-            'S - Toggle sound',
-            'L - Toggle language',
-            '+/- - Adjust time limit (10-300s)',
-        ],
-        'black_stone': '●',
-        'white_stone': '○',
-    },
-}
+LANG = STRINGS  # Reference to i18n module for backwards compatibility
 
 # ── File paths ─────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -445,7 +329,7 @@ def show_scoreboard(lang='zh'):
         top10 = ranking[:10]
 
         print(t['score_header'])
-        print('-' * 60)
+        print(t.get('dash_line', '─' * 60))
         for i, (wr, w, l, d, last, name) in enumerate(top10, 1):
             print(t['score_row'].format(i, name, w, l, d, wr, last))
 
@@ -756,7 +640,7 @@ class Game:
                     show_scoreboard(self.lang)
                 elif choice == '4':
                     self.running = False
-                    print('再见！Goodbye!')
+                    print(t('bye'))
                 else:
                     print(t('invalid_choice'))
                     time.sleep(1)
@@ -985,7 +869,7 @@ def main():
     try:
         game.play()
     except KeyboardInterrupt:
-        print('\n\n再见！Goodbye!')
+        print('\n\n' + i18n_t(game.lang, 'bye'))
         sys.exit(0)
 
 
